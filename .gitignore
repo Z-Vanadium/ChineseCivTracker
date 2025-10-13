@@ -1,3 +1,8 @@
+# others
+*.DS_Store
+__db__/
+*.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
