@@ -25,7 +25,7 @@ def route_api_send():
             return jsonify({"status": "error", "message": "缺少数据参数"}), 400
         
         game_data = json.loads(game_data_str)
-        _Debug(f'Get gamedata: {game_data_str}')
+        # _Debug(f'Get gamedata: {game_data_str}')
         
         game_id = save_game_data(game_data)
         
@@ -49,16 +49,25 @@ def save_game_data(game_data: dict[str, any]) -> int: # type: ignore
         game_data = validate_game_data(game_data)
         if not game_data:
             return 0
-        timestamp = game_data.get('timestamp', int(datetime.now().timestamp()))
+        timestamp = int(game_data.get('timestamp', int(datetime.now().timestamp())))
+        if timestamp:
+            # check if time stamp in 10 sec is existing
+            existing_game = find_duplicate_game_by_timestamp(db, timestamp, tolerance_seconds=10)
+            
+            if existing_game:
+                _Debug(f"Exisiting time stamp in 10 sec in game with id: {existing_game['id']}")
+                return -1  # 返回特殊值表示重复数据
+
         player_leader_civ: dict[str, any] = game_data.get('player_leader_civ', {}) # type: ignore
         mod_version: dict[str, any] = game_data.get('mod_version', {}) # pyright: ignore[reportGeneralTypeIssues]
         winner_team = game_data.get('winner_team')
         
         # game data
         cursor = db.execute('''
-            INSERT INTO Games (ccb_version, ccb_map_version, ccb_mph_version, ccb_exp_version, map_type, player_num, total_turns, winner_team) VALUES
-                (?, ?, ?, ?, ?, ?, ?, ?);
+            INSERT INTO Games (game_time_stamp, ccb_version, ccb_map_version, ccb_mph_version, ccb_exp_version, map_type, player_num, total_turns, winner_team) VALUES
+                (?, ?, ?, ?, ?, ?, ?, ?, ?);
         ''', (
+                timestamp,
                 mod_version.get('ccb_version'),
                 mod_version.get('ccb_map_version'),
                 mod_version.get('ccb_mph_version'),
@@ -114,6 +123,7 @@ def save_game_data(game_data: dict[str, any]) -> int: # type: ignore
         
         db.commit()
         _Debug(f"Save game data successfully!")
+        close_db()
         return game_id or 0
         
         
@@ -121,6 +131,37 @@ def save_game_data(game_data: dict[str, any]) -> int: # type: ignore
         db.rollback()
         _Debug(f"Error when saving game data: {e}")
         raise
+
+
+def find_duplicate_game_by_timestamp(db: sqlite3.Connection, timestamp: int, tolerance_seconds: int = 10) -> dict | None:
+    """
+    根据时间戳查找重复游戏（支持时间容差）
+    
+    Args:
+        db: 数据库连接
+        timestamp: 要检查的时间戳
+        tolerance_seconds: 时间容差（秒）
+        
+    Returns:
+        重复的游戏记录或None
+    """
+    # 计算时间范围
+    min_timestamp = timestamp - tolerance_seconds
+    max_timestamp = timestamp + tolerance_seconds
+    
+    # # 将时间戳范围转换为日期时间字符串范围
+    # # from datetime import datetime
+    # min_time_str = datetime.fromtimestamp(min_timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    # max_time_str = datetime.fromtimestamp(max_timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    
+    # 查询在时间范围内的游戏
+    existing_game = db.execute('''
+        SELECT id, game_time_stamp 
+        FROM Games 
+        WHERE game_time_stamp BETWEEN ? AND ?
+    ''', (min_timestamp, max_timestamp)).fetchone()
+    
+    return existing_game
 
 def validate_game_data(game_data: dict[str, any]) -> any: # type: ignore
     # ignore less than 33 (including 33)

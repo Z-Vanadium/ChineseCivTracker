@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS GamePlayers;
 
 CREATE TABLE IF NOT EXISTS Games (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    game_time_stamp INTEGER,
     ccb_version     TEXT,
     ccb_map_version TEXT,
     ccb_mph_version TEXT,
