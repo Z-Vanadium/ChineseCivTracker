@@ -64,7 +64,7 @@ def save_game_data(game_data: dict[str, any]) -> int: # type: ignore
         
         # game data
         cursor = db.execute('''
-            INSERT INTO Games (time_stamp, map_type, player_num, total_turns, winner_team, game_seed, map_seed) VALUES
+            INSERT INTO Games (timestamp, map_type, player_num, total_turns, winner_team, game_seed, map_seed) VALUES
                 (?, ?, ?, ?, ?, ?, ?, ?, ?);
         ''', (
                 timestamp,
