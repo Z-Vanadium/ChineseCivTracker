@@ -64,51 +64,52 @@ def save_game_data(game_data: dict[str, any]) -> int: # type: ignore
         
         # game data
         cursor = db.execute('''
-            INSERT INTO Games (game_time_stamp, ccb_version, ccb_map_version, ccb_mph_version, ccb_exp_version, map_type, player_num, total_turns, winner_team) VALUES
+            INSERT INTO Games (time_stamp, map_type, player_num, total_turns, winner_team, game_seed, map_seed) VALUES
                 (?, ?, ?, ?, ?, ?, ?, ?, ?);
         ''', (
                 timestamp,
-                mod_version.get('ccb_version'),
-                mod_version.get('ccb_map_version'),
-                mod_version.get('ccb_mph_version'),
-                mod_version.get('ccb_exp_version'),
                 game_data.get('map_type'),
                 game_data.get('player_num'),
                 game_data.get('total_turns'),
-                game_data.get('winner_team')
+                game_data.get('winner_team'),
+                game_data.get('game_seed'),
+                game_data.get('map_seed')
             )
         )
         game_id = cursor.lastrowid
         
         # player data and gameplayer data
-        for steam_id, player_info in player_leader_civ.items():
+        for player_code, player_info in player_leader_civ.items():
+            steam_id = player_info.get('steam_id')
+            if steam_id is None:
+                continue
             is_winner: bool = (player_info.get('team') == winner_team)
             # player data
-            if is_winner:
-                # is winner
-                db.execute('''
-                    INSERT INTO Players (id, total_game_num, won_game_num, win_rate)
-                    VALUES (?, 1, 1, 100.0)
-                    ON CONFLICT(id) DO UPDATE SET
-                        total_game_num = total_game_num + 1,
-                        won_game_num = won_game_num + 1,
-                        win_rate = ROUND((won_game_num + 1) * 100.0 / (total_game_num + 1), 2)
-                ''', (steam_id,))
-            else:
-                # is not winner
-                db.execute('''
-                    INSERT INTO Players (id, total_game_num, won_game_num, win_rate)
-                    VALUES (?, 1, 0, 0.0)
-                    ON CONFLICT(id) DO UPDATE SET
-                        total_game_num = total_game_num + 1,
-                        win_rate = ROUND(won_game_num * 100.0 / (total_game_num + 1), 2)
-                ''', (steam_id,))
+            # if is_winner:
+            #     # is winner
+            #     db.execute('''
+            #         INSERT INTO Players (id, total_game_num, won_game_num, win_rate)
+            #         VALUES (?, 1, 1, 100.0)
+            #         ON CONFLICT(id) DO UPDATE SET
+            #             total_game_num = total_game_num + 1,
+            #             won_game_num = won_game_num + 1,
+            #             win_rate = ROUND((won_game_num + 1) * 100.0 / (total_game_num + 1), 2)
+            #     ''', (steam_id,))
+            # else:
+            #     # is not winner
+            #     db.execute('''
+            #         INSERT INTO Players (id, total_game_num, won_game_num, win_rate)
+            #         VALUES (?, 1, 0, 0.0)
+            #         ON CONFLICT(id) DO UPDATE SET
+            #             total_game_num = total_game_num + 1,
+            #             win_rate = ROUND(won_game_num * 100.0 / (total_game_num + 1), 2)
+            #     ''', (steam_id,))
             
             # gameplayer data
             db.execute('''
                 INSERT INTO GamePlayers (
                     game_id, player_id, team, is_winner, 
-                    leader_type, civilization_type
+                    leader_type, civilization_type, player_code
                 ) VALUES (?, ?, ?, ?, ?, ?);
             ''', (
                 game_id,
@@ -116,7 +117,8 @@ def save_game_data(game_data: dict[str, any]) -> int: # type: ignore
                 player_info.get('team'),
                 is_winner,
                 player_info.get('leader_type'),
-                player_info.get('civilization_type')
+                player_info.get('civilization_type'),
+                player_code
             ))
             
             
