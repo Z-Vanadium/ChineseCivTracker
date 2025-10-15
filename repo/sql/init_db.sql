@@ -1,3 +1,7 @@
+DROP TABLE IF EXISTS Games;
+DROP TABLE IF EXISTS Players;
+DROP TABLE IF EXISTS GamePlayers;
+
 CREATE TABLE Games (
     game_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     timestamp BIGINT NOT NULL,
@@ -27,3 +31,4 @@ CREATE TABLE GamePlayers (
     FOREIGN KEY (game_id) REFERENCES Games(game_id) ON DELETE CASCADE,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
+
