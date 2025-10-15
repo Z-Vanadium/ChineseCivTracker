@@ -5,8 +5,8 @@ import logging
 from datetime import datetime
 
 DEBUG = True
-HOST = '0.0.0.0'
-PORT = 5050
+HOST = '60.205.246.25'
+PORT = 80
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('ChineseCivTracker')
@@ -52,8 +52,8 @@ def save_game_data(game_data: dict[str, any]) -> int: # type: ignore
         timestamp = int(game_data.get('timestamp', int(datetime.now().timestamp())))
         if timestamp:
             # check if time stamp in 10 sec is existing
-            existing_game = find_duplicate_game_by_timestamp(db, timestamp, tolerance_seconds=10)
-            
+            # existing_game = find_duplicate_game_by_timestamp(db, timestamp, tolerance_seconds=10)
+            existing_game = False
             if existing_game:
                 _Debug(f"Exisiting time stamp in 10 sec in game with id: {existing_game['id']}")
                 return -1  # 返回特殊值表示重复数据
