@@ -108,14 +108,13 @@ def save_game_data(game_data: dict[str, any]) -> int: # type: ignore
             # gameplayer data
             db.execute('''
                 INSERT INTO GamePlayers (
-                    game_id, player_id, team, is_winner, 
+                    game_id, player_id, team, 
                     leader_type, civilization_type, player_code
                 ) VALUES (?, ?, ?, ?, ?, ?, ?);
             ''', (
                 game_id,
                 steam_id,
                 player_info.get('team'),
-                is_winner,
                 player_info.get('leader_type'),
                 player_info.get('civilization_type'),
                 player_code
