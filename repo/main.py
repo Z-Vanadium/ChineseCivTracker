@@ -110,7 +110,7 @@ def save_game_data(game_data: dict[str, any]) -> int: # type: ignore
                 INSERT INTO GamePlayers (
                     game_id, player_id, team, 
                     leader_type, civilization_type, player_code
-                ) VALUES (?, ?, ?, ?, ?, ?, ?);
+                ) VALUES (?, ?, ?, ?, ?, ?);
             ''', (
                 game_id,
                 steam_id,
