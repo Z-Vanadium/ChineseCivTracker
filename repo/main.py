@@ -65,7 +65,7 @@ def save_game_data(game_data: dict[str, any]) -> int: # type: ignore
         # game data
         cursor = db.execute('''
             INSERT INTO Games (timestamp, map_type, player_num, total_turns, winner_team, game_seed, map_seed) VALUES
-                (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                (?, ?, ?, ?, ?, ?, ?);
         ''', (
                 timestamp,
                 game_data.get('map_type'),
@@ -110,7 +110,7 @@ def save_game_data(game_data: dict[str, any]) -> int: # type: ignore
                 INSERT INTO GamePlayers (
                     game_id, player_id, team, is_winner, 
                     leader_type, civilization_type, player_code
-                ) VALUES (?, ?, ?, ?, ?, ?);
+                ) VALUES (?, ?, ?, ?, ?, ?, ?);
             ''', (
                 game_id,
                 steam_id,
