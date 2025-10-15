@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 
 DEBUG = True
-HOST = '60.205.246.25'
+HOST = '0.0.0.0'
 PORT = 80
 
 logging.basicConfig(level=logging.INFO)
